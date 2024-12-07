@@ -32,13 +32,38 @@ from collision_persons_final
 where position_in_vehicle = 'Driver' AND (person_age > 65 OR person_age<26)
 order by person_age;
 
---sexta pregunta arreglar
-select C.person_id,V.vehicle_type
-from collision_persons_final C, vehiculofinal V
-where C.vehicle_id = V.vehicle_id AND vehicle_type = 'Pick up';
+--sexta pregunta
+SELECT V.*, C.*
+from vehiculofinal V, collision_vehicles_final C
+where V.vehicle_id = C.vehicle_id AND V.vehicle_type = 'Pick up';
 
 --septima pregunta
-SELECT
+SELECT V.vehicle_make, COUNT(CV.collision_id) AS num_accidentes
+FROM vehiculofinal V, collision_vehicles_final CV
+where V.vehicle_id = CV.vehicle_id
+GROUP BY V.vehicle_make
+ORDER BY num_accidentes
+LIMIT 3;
+
+SELECT V.vehicle_type, COUNT(distinct CV.collision_id) AS num_accidentes
+FROM vehiculofinal V, collision_vehicles_final CV
+where V.vehicle_id = CV.vehicle_id
+GROUP BY V.vehicle_type
+ORDER BY num_accidentes
+LIMIT 3;
+
+--octava pregunta
+SELECT COUNT(CV.*) AS n_accidentes, V.vehicle_make
+FROM collision_vehicles_final CV, vehiculofinal V
+where V.vehicle_id = CV.vehicle_id
+GROUP BY V.vehicle_make
+ORDER BY n_accidentes;
+
+--novena pregunta
+SELECT CP.person_id, P.person_state
+FROM collision_persons_final CP, personafinal P
+where CP.person_id = P.person_id
+order by P.person_state;
 
 --decima pregunta
 SELECT state_registration,count(*) AS n_accidentes
