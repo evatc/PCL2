@@ -53,11 +53,11 @@ ORDER BY num_accidentes
 LIMIT 3;
 
 --octava pregunta
-SELECT COUNT(CV.*) AS n_accidentes, V.vehicle_make
+SELECT COUNT(CV.collision_id) AS n_accidentes, V.vehicle_make
 FROM collision_vehicles_final CV, vehiculofinal V
 where V.vehicle_id = CV.vehicle_id
 GROUP BY V.vehicle_make
-ORDER BY n_accidentes;
+ORDER BY n_accidentes desc;
 
 --novena pregunta
 SELECT CP.person_id, P.person_state
