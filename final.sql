@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS personafinal(
 );
 CREATE TABLE IF NOT EXISTS vehiculofinal(
     vehicle_id varchar(50)  NOT NULL,
-    state_registration varchar(5),
+    state_registration varchar(15),
     vehicle_type varchar(30),
     vehicle_make varchar(20),
     vehicle_model varchar(20),
@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS collision_crashes_final(
 );
 
 CREATE TABLE IF NOT EXISTS collision_persons_final(
+    collision_id int,
     person_id varchar(50),
     person_type varchar(30) NOT NULL,
     person_injury varchar(30) NOT NULL,
@@ -94,12 +95,14 @@ CREATE TABLE IF NOT EXISTS collision_persons_final(
     contributing_factor text,
     contributing_factor_2 text,
     person_sex CHAR(1) CHECK (person_sex IN ('M','F','U',null))
-
+    --PRIMARY KEY (person_id, collision_id),
+    --FOREIGN KEY (person_id) REFERENCES personafinal(person_id),
+    --FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
 );
 
 INSERT INTO final.vehiculofinal(vehicle_id, vehicle_type, vehicle_make, vehicle_model, vehicle_year)
 SELECT
-    CAST(vehicle_id AS varchar(30)),
+    CAST(vehicle_id AS varchar(50)),
     CAST(vehicle_type AS varchar(30)),
     CAST(vehicle_make AS varchar(20)),
     CAST(vehicle_model AS varchar(20)),
@@ -148,8 +151,9 @@ SELECT
     CAST(collision_id AS int)
 FROM temporal.accidente;
 
-INSERT INTO final.collision_persons_final(person_id, person_type, person_injury, vehicle_id, person_age, ejection, emotional_status, bodily_injury, position_in_vehicle, safety_equipment, ped_location, ped_action, complaint, ped_role, contributing_factor, contributing_factor_2, person_sex)
+INSERT INTO final.collision_persons_final(collision_id,person_id, person_type, person_injury, vehicle_id, person_age, ejection, emotional_status, bodily_injury, position_in_vehicle, safety_equipment, ped_location, ped_action, complaint, ped_role, contributing_factor, contributing_factor_2, person_sex)
 SELECT
+    CAST(collision_id AS int),
     CAST(person_id AS varchar(50)),
     CAST(person_type AS varchar(30)),
     CAST(person_injury AS varchar(30)),

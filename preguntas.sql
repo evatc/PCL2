@@ -71,3 +71,4 @@ FROM collision_vehicles_final
 group by state_registration
 order by n_accidentes;
 
+
