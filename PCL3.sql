@@ -56,17 +56,46 @@ DROP COLUMN person_sex;
 
 UPDATE personafinal
 SET person_sex = 'U'
-WHERE person_sex IS NULL OR person_sex=''
+WHERE person_sex IS NULL OR person_sex='';
 
 --Ejercicio 6
+-- Agregar la columna person_age (si aún no se ha agregado)
 ALTER TABLE personafinal
-ADD COLUMN person_age integer;
+ADD COLUMN person_age INTEGER;
 
-CREATE OR REPLACE TRIGGER datos_person_age
-BEFORE INSERT ON personafinal
+-- Crear la función del trigger
+CREATE OR REPLACE FUNCTION set_person_age()
+RETURNS TRIGGER AS $$
 BEGIN
-    new.person_age = 2024 -
-END
+    NEW.person_age := EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM NEW.person_dob);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+--Crear trigger
+CREATE TRIGGER datos_person_age
+BEFORE INSERT OR UPDATE ON personafinal
+FOR EACH ROW
+EXECUTE FUNCTION set_person_age();
 
+--Ejercicio 7
+--Agrega la columna si no ha sido agregada antes
+ALTER TABLE vehiculofinal
+ADD COLUMN vehicle_accidents integer;
 
-insert into personafinal
+-- Crear la función del trigger
+CREATE OR REPLACE FUNCTION set_vehicle_accidents()
+RETURNS TRIGGER AS $$
+DECLARE
+    n_accidentes INTEGER;
+BEGIN
+    SELECT  COUNT(C.vehicle_id) INTO n_accidentes FROM collision_vehicles_final C WHERE C.vehicle_id = NEW.vehicle_id;
+    NEW.vehicle_accidents := n_accidentes;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+--Crear trigger
+CREATE TRIGGER datos_vehicle_accidents
+BEFORE INSERT OR UPDATE ON vehiculofinal
+FOR EACH ROW
+EXECUTE FUNCTION set_vehicle_accidents();
+
