@@ -81,6 +81,60 @@ EXECUTE FUNCTION set_person_age();
 --Agrega la columna si no ha sido agregada antes
 ALTER TABLE vehiculofinal
 ADD COLUMN vehicle_accidents integer;
+--limpiar vehiculos
+CREATE OR REPLACE FUNCTION clean_duplicates_vehicles()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Eliminar registros existentes con el mismo ID que el nuevo
+    IF NEW.vehicle_id IS NOT NULL THEN
+        DELETE FROM vehiculofinal
+        WHERE vehicle_id = NEW.vehicle_id;
+    END IF;
+
+    -- Continuar con la operación de inserción o actualización
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Crear el trigger para limpiar duplicados
+CREATE TRIGGER clean_duplicates_v_trigger
+BEFORE INSERT OR UPDATE ON vehiculofinal
+FOR EACH ROW
+EXECUTE FUNCTION clean_duplicates_vehicles();
+
+--limpiar collision_vehiculos
+CREATE OR REPLACE FUNCTION clean_duplicates_cvehicles()
+RETURNS TRIGGER AS $$
+DECLARE
+    is_executing BOOLEAN := FALSE; -- Variable para evitar bucles
+BEGIN
+    RAISE NOTICE 'Trigger ejecutado para vehicle_id: %', NEW.vehicle_id;
+    -- Verificar si el trigger ya está ejecutándose
+    IF NOT is_executing THEN
+        is_executing := TRUE;
+        RAISE NOTICE 'se ejecuta';
+        -- Eliminar registros existentes con el mismo ID que el nuevo
+        IF NEW.vehicle_id IS NOT NULL THEN
+            DELETE FROM final.collision_vehicles_final
+            WHERE collision_vehicles_final.vehicle_id = NEW.vehicle_id
+            AND ctid <> NEW.ctid; -- Excluir el registro actual
+        END IF;
+
+        is_executing := FALSE;
+    RAISE NOTICE 'Registros duplicados eliminados para vehicle_id: %', NEW.vehicle_id;
+    END IF;
+
+    -- Continuar con la operación de inserción o actualización
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Crear el trigger para limpiar duplicados
+CREATE TRIGGER clean_duplicates_cv_trigger
+BEFORE INSERT OR UPDATE ON collision_vehicles_final
+FOR EACH ROW
+EXECUTE FUNCTION clean_duplicates_cvehicles();
 
 -- Crear la función del trigger
 CREATE OR REPLACE FUNCTION set_vehicle_accidents()
@@ -88,7 +142,11 @@ RETURNS TRIGGER AS $$
 DECLARE
     n_accidentes INTEGER;
 BEGIN
-    SELECT  COUNT(C.vehicle_id) INTO n_accidentes FROM collision_vehicles_final C WHERE C.vehicle_id = NEW.vehicle_id;
+    SELECT COUNT(*)
+    INTO n_accidentes
+    FROM collision_vehicles_final
+    WHERE vehicle_id = NEW.vehicle_id;
+
     NEW.vehicle_accidents := n_accidentes;
     RETURN NEW;
 END;
