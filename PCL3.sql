@@ -157,3 +157,30 @@ BEFORE INSERT OR UPDATE ON vehiculofinal
 FOR EACH ROW
 EXECUTE FUNCTION set_vehicle_accidents();
 
+--Ejercicio 8
+ALTER TABLE personafinal
+    ADD CONSTRAINT Persona_pk PRIMARY KEY (person_id);
+
+ALTER TABLE vehiculofinal
+    ADD CONSTRAINT Vehiculo_pk PRIMARY KEY (vehicle_id);
+
+ALTER TABLE collision_vehicles_final
+    ADD CONSTRAINT Collision_vehicles_pk PRIMARY KEY (collision_id, vehicle_id);
+ALTER TABLE collision_vehicles_final
+    ADD CONSTRAINT Collision_vehicles_collision_fk FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
+    ON DELETE CASCADE;
+ALTER TABLE collision_vehicles_final
+    ADD CONSTRAINT Collision_vehicles_collision_fk FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
+    ON DELETE CASCADE;
+
+ALTER TABLE collision_crashes_final
+    ADD CONSTRAINT Collision_crashes_pk PRIMARY KEY (collision_id);
+
+ALTER TABLE collision_persons_final
+    ADD CONSTRAINT Collision_persons_pk PRIMARY KEY (collision_id, person_id);
+ALTER TABLE collision_persons_final
+    ADD CONSTRAINT Collision_persons_person_fk FOREIGN KEY (person_id) REFERENCES personafinal(person_id)
+    ON DELETE CASCADE;
+ALTER TABLE collision_persons_final
+    ADD CONSTRAINT Collision_persons_collision_fk FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
+    ON DELETE CASCADE;

@@ -143,7 +143,7 @@ SELECT
     CAST(number_of_cyclist_killed AS smallint),
     CAST(number_of_motorist_injured AS smallint),
     CAST(number_of_motorist_killed AS smallint),
-    CAST(contributing_factor_vehicle_1 AS text),
+    CAST(contributing_factor_vehicle AS text),
     CAST(contributing_factor_vehicle_2 AS text),
     CAST(contributing_factor_vehicle_3 AS text),
     CAST(contributing_factor_vehicle_4 AS text),
