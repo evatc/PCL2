@@ -86,7 +86,7 @@ BEGIN
     WHERE ctid NOT IN (
         SELECT min(ctid)
         FROM collision_vehicles_final
-        GROUP BY vehicle_id
+        GROUP BY collision_id
     );
     -- Continuar con la operación de inserción o actualización
     RETURN NEW;
@@ -182,6 +182,3 @@ SELECT vehicle_id, COUNT(*)
 FROM collision_vehicles_final
 GROUP BY vehicle_id
 HAVING COUNT(*) > 1;
-
-
-

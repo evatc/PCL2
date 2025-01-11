@@ -144,7 +144,7 @@ SELECT
     CAST(number_of_cyclist_killed AS smallint),
     CAST(number_of_motorist_injured AS smallint),
     CAST(number_of_motorist_killed AS smallint),
-    CAST(contributing_factor_vehicle_1 AS text),
+    CAST(contributing_factor_vehicle AS text),
     CAST(contributing_factor_vehicle_2 AS text),
     CAST(contributing_factor_vehicle_3 AS text),
     CAST(contributing_factor_vehicle_4 AS text),
@@ -174,7 +174,7 @@ SELECT
     CAST(person_sex AS CHAR(1))
 FROM temporal.accidente_person;
 
-CREATE INDEX idx_collision_vehicle_id ON collision_vehicles_final(vehicle_id);
+CREATE INDEX idx_collision_vehicle_id ON collision_vehicles_final(collision_id);
 INSERT INTO final.collision_vehicles_final(collision_id,vehicle_id,state_registration, travel_direction, vehicle_occupants, driver_sex, driver_license_status, driver_license_jurisdiction, pre_crash, point_of_impact, vehicle_damage, vehicle_damage_2, vehicle_damage_3, vehicle_damage_4, public_property_damage, public_property_damage_type, contributing_factor, contributing_factor_2)
 SELECT
     CAST(collision_id AS int),
