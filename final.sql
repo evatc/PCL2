@@ -195,4 +195,4 @@ SELECT
     CAST(public_property_damage_type AS varchar(30)),
     CAST(contributing_factor AS varchar(30)),
     CAST(contributing_factor_2 AS varchar(30))
-FROM temporal.accidentes_vehicles
+FROM temporal.accidentes_vehicles;
