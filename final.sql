@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS personafinal(
     person_zip char(5) NOT NULL,
     person_ssn char(11) NOT NULL,
     person_dob date NOT NULL
-    --PRIMARY KEY (person_id)
 );
 CREATE TABLE IF NOT EXISTS vehiculofinal(
     vehicle_id varchar(50)  NOT NULL,
@@ -21,10 +20,10 @@ CREATE TABLE IF NOT EXISTS vehiculofinal(
     vehicle_make varchar(20),
     vehicle_model varchar(20),
     vehicle_year char(4)
-    --PRIMARY KEY (vehicle_id)
 );
 
 CREATE TABLE IF NOT EXISTS collision_vehicles_final(
+    unique_id int NOT NULL,
     collision_id int NOT NULL,
     vehicle_id varchar(50) NOT NULL,
     state_registration varchar(5),
@@ -43,9 +42,6 @@ CREATE TABLE IF NOT EXISTS collision_vehicles_final(
     public_property_damage_type varchar(30),
     contributing_factor varchar(30),
     contributing_factor_2 varchar(30)
-    --PRIMARY KEY (vehicle_id, collision_id),
-    --FOREIGN KEY (vehicle_id) REFERENCES vehiculofinal(vehicle_id),
-    --FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
 );
 
 CREATE TABLE IF NOT EXISTS collision_crashes_final(
@@ -73,10 +69,10 @@ CREATE TABLE IF NOT EXISTS collision_crashes_final(
     contributing_factor_vehicle_4 text,
     contributing_factor_vehicle_5 text,
     collision_id int NOT NULL
-    --PRIMARY KEY (collision_id)
 );
 
 CREATE TABLE IF NOT EXISTS collision_persons_final(
+    unique_id int NOT NULL,
     collision_id int,
     person_id varchar(50),
     person_type varchar(30) NOT NULL,
@@ -95,9 +91,6 @@ CREATE TABLE IF NOT EXISTS collision_persons_final(
     contributing_factor text,
     contributing_factor_2 text,
     person_sex CHAR(1) CHECK (person_sex IN ('M','F','U',null))
-    --PRIMARY KEY (person_id, collision_id),
-    --FOREIGN KEY (person_id) REFERENCES personafinal(person_id),
-    --FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
 );
 
 CREATE INDEX idx_vehiculofinal_vehicle_id ON vehiculofinal(vehicle_id);
@@ -144,7 +137,7 @@ SELECT
     CAST(number_of_cyclist_killed AS smallint),
     CAST(number_of_motorist_injured AS smallint),
     CAST(number_of_motorist_killed AS smallint),
-    CAST(contributing_factor_vehicle AS text),
+    CAST(contributing_factor_vehicle_1 AS text),
     CAST(contributing_factor_vehicle_2 AS text),
     CAST(contributing_factor_vehicle_3 AS text),
     CAST(contributing_factor_vehicle_4 AS text),
@@ -152,8 +145,9 @@ SELECT
     CAST(collision_id AS int)
 FROM temporal.accidente;
 
-INSERT INTO final.collision_persons_final(collision_id,person_id, person_type, person_injury, vehicle_id, person_age, ejection, emotional_status, bodily_injury, position_in_vehicle, safety_equipment, ped_location, ped_action, complaint, ped_role, contributing_factor, contributing_factor_2, person_sex)
+INSERT INTO final.collision_persons_final(unique_id,collision_id,person_id, person_type, person_injury, vehicle_id, person_age, ejection, emotional_status, bodily_injury, position_in_vehicle, safety_equipment, ped_location, ped_action, complaint, ped_role, contributing_factor, contributing_factor_2, person_sex)
 SELECT
+    CAST(unique_id AS int),
     CAST(collision_id AS int),
     CAST(person_id AS varchar(50)),
     CAST(person_type AS varchar(30)),
@@ -175,8 +169,9 @@ SELECT
 FROM temporal.accidente_person;
 
 CREATE INDEX idx_collision_vehicle_id ON collision_vehicles_final(collision_id);
-INSERT INTO final.collision_vehicles_final(collision_id,vehicle_id,state_registration, travel_direction, vehicle_occupants, driver_sex, driver_license_status, driver_license_jurisdiction, pre_crash, point_of_impact, vehicle_damage, vehicle_damage_2, vehicle_damage_3, vehicle_damage_4, public_property_damage, public_property_damage_type, contributing_factor, contributing_factor_2)
+INSERT INTO final.collision_vehicles_final(unique_id,collision_id,vehicle_id,state_registration, travel_direction, vehicle_occupants, driver_sex, driver_license_status, driver_license_jurisdiction, pre_crash, point_of_impact, vehicle_damage, vehicle_damage_2, vehicle_damage_3, vehicle_damage_4, public_property_damage, public_property_damage_type, contributing_factor, contributing_factor_2)
 SELECT
+    CAST(unique_id AS int),
     CAST(collision_id AS int),
     CAST(vehicle_id AS varchar(50)),
     CAST(state_registration AS varchar(5)),

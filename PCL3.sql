@@ -78,41 +78,13 @@ FOR EACH ROW
 EXECUTE FUNCTION set_person_age();
 
 --Ejercicio 7
---limpiar collision_vehiculos
-CREATE OR REPLACE FUNCTION clean_duplicates_cvehicles()
-RETURNS TRIGGER AS $$
-BEGIN
-    DELETE FROM collision_vehicles_final
-    WHERE ctid NOT IN (
-        SELECT min(ctid)
-        FROM collision_vehicles_final
-        GROUP BY collision_id
-    );
-    -- Continuar con la operación de inserción o actualización
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Crear el trigger para limpiar duplicados
-CREATE TRIGGER clean_collision_vehicle_trigger
-AFTER INSERT OR UPDATE ON collision_vehicles_final
-FOR EACH STATEMENT
-EXECUTE FUNCTION clean_duplicates_cvehicles();
-
 --Agrega la columna si no ha sido agregada antes
 ALTER TABLE vehiculofinal
-ADD COLUMN vehicle_accidents integer default 0;
+ADD COLUMN vehicle_accidents INTEGER default 0;
 
 CREATE OR REPLACE FUNCTION clean_duplicates_vehicles()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Verificar si el trigger ya se ejecutó en esta sesión
-    IF CURRENT_SETTING('myapp.trigger_executing', TRUE) = 'true' THEN
-        RETURN NULL;
-    END IF;
-
-    -- Activar la bandera
-    PERFORM SET_CONFIG('myapp.trigger_executing', 'true', TRUE);
 
     -- Eliminar duplicados
     DELETE FROM vehiculofinal
@@ -133,10 +105,8 @@ BEGIN
     )
     WHERE vehicle_id = NEW.vehicle_id;
 
-    -- Desactivar la bandera
-    PERFORM SET_CONFIG('myapp.trigger_executing', 'false', TRUE);
-
-    RETURN NULL;
+    -- No se requiere modificar NEW, así que retornamos NULL
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -146,39 +116,34 @@ DROP TRIGGER IF EXISTS clean_duplicates_v_trigger ON vehiculofinal;
 -- Crear el nuevo trigger
 CREATE TRIGGER clean_duplicates_v_trigger
 AFTER INSERT OR UPDATE ON vehiculofinal
-FOR EACH STATEMENT
+FOR EACH ROW
 EXECUTE FUNCTION clean_duplicates_vehicles();
 
 --Ejercicio 8
 ALTER TABLE personafinal
     ADD CONSTRAINT Persona_pk PRIMARY KEY (person_id);
 
+-- Eliminar los duplicados en la tabla vehiculofinal
+DELETE FROM vehiculofinal
+WHERE ctid NOT IN (
+    SELECT MIN(ctid)
+    FROM vehiculofinal
+    GROUP BY vehicle_id
+);
 ALTER TABLE vehiculofinal
     ADD CONSTRAINT Vehiculo_pk PRIMARY KEY (vehicle_id);
 
 ALTER TABLE collision_vehicles_final
-    ADD CONSTRAINT Collision_vehicles_pk PRIMARY KEY (collision_id, vehicle_id);
-ALTER TABLE collision_vehicles_final
-    ADD CONSTRAINT Collision_vehicles_collision_fk FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
-    ON DELETE CASCADE;
-ALTER TABLE collision_vehicles_final
-    ADD CONSTRAINT Collision_vehicles_collision_fk FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
-    ON DELETE CASCADE;
+    ADD CONSTRAINT Collision_vehicles_pk PRIMARY KEY (unique_id);
 
 ALTER TABLE collision_crashes_final
     ADD CONSTRAINT Collision_crashes_pk PRIMARY KEY (collision_id);
 
 ALTER TABLE collision_persons_final
-    ADD CONSTRAINT Collision_persons_pk PRIMARY KEY (collision_id, person_id);
-ALTER TABLE collision_persons_final
-    ADD CONSTRAINT Collision_persons_person_fk FOREIGN KEY (person_id) REFERENCES personafinal(person_id)
-    ON DELETE CASCADE;
-ALTER TABLE collision_persons_final
-    ADD CONSTRAINT Collision_persons_collision_fk FOREIGN KEY (collision_id) REFERENCES collision_crashes_final(collision_id)
-    ON DELETE CASCADE;
+    ADD CONSTRAINT Collision_persons_pk PRIMARY KEY (unique_id);
 
 --saber si hay datos repetidos
 SELECT vehicle_id, COUNT(*)
-FROM collision_vehicles_final
+FROM vehiculofinal
 GROUP BY vehicle_id
 HAVING COUNT(*) > 1;
